@@ -1,61 +1,72 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import { IUser } from './User';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface ITransaction extends Document {
-  userId: IUser['_id'];
+  userName: string;
   amount: number;
+  type: "income" | "expense";
   date: Date;
-  categoryId: Schema.Types.ObjectId;
+  categoryName: string;
   description?: string;
-  paymentMethod?: 'Cash' | 'Credit Card' | 'Debit Card' | 'UPI' | 'Other';
+  paymentMethod?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const transactionSchema = new Schema({
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true // Add index for better query performance
+const transactionSchema = new Schema(
+  {
+    userName: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    type: {
+      type: String,
+      required: true,
+      enum: ["expense", "income"],
+      index: true,
+    },
+    date: {
+      type: Date,
+      required: true,
+      index: true,
+    },
+    categoryName: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+    paymentMethod: {
+      type: String,
+      trim: true,
+    },
   },
-  amount: {
-    type: Number,
-    required: true
-  },
-  date: {
-    type: Date,
-    required: true,
-    default: Date.now
-  },
-  categoryId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Categorie',
-    required: true
-  },
-  description: {
-    type: String,
-    trim: true,
-    maxlength: 500
-  },
-  paymentMethod: {
-    type: String,
-    enum: ['Cash', 'Credit Card', 'Debit Card', 'UPI', 'Other'],
-    default: 'Cash'
+  {
+    timestamps: true, // Automatically manage createdAt and updatedAt
+    toJSON: {
+      transform: function (doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      },
+    },
   }
-}, {
-  timestamps: true, // Automatically manage createdAt and updatedAt
-  toJSON: {
-    transform: function(doc, ret) {
-      ret.id = ret._id;
-      delete ret._id;
-      delete ret.__v;
-      return ret;
-    }
-  }
-});
+);
 
-// Add compound index for efficient querying by user and date range
-transactionSchema.index({ userId: 1, date: -1 });
+// Compound indexes for common queries
+transactionSchema.index({ userName: 1, date: -1 });
+transactionSchema.index({ userName: 1, type: 1 });
+transactionSchema.index({ userName: 1, categoryName: 1, type: 1 });
 
-export const Transaction = mongoose.model<ITransaction>('Transaction', transactionSchema); 
+export const Transaction = mongoose.model<ITransaction>(
+  "Transaction",
+  transactionSchema
+);

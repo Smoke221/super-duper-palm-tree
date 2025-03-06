@@ -1,10 +1,9 @@
-import express from 'express';
-import { Request, Response } from 'express';
-import { env } from './config/env.config';
-import { initializeDatabase } from './config/database';
+import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import { initializeDatabase } from './config/database';
+import { env } from './config/env.config';
+import transactionRoutes from './routes/transactionRoutes';
 import userRoutes from './routes/userRoutes';
-
 const app = express();
 
 // Middleware to parse JSON bodies
@@ -12,6 +11,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // Basic route
 app.get('/', (req: Request, res: Response) => {
