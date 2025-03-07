@@ -24,7 +24,21 @@ export class TransactionService {
       const result = await DbUtils.getUserTransactions(userName, parsedFilters);
 
       return {
-        transactions: result.transactions,
+        transactions: result.transactions.map(transaction => ({
+          id: transaction.id,
+          amount: transaction.amount,
+          type: transaction.type,
+          categoryName: transaction.categoryName,
+          description: transaction.description || '',
+          paymentMethod: transaction.paymentMethod || '',
+          date: transaction.date.toISOString(),
+          formattedDate: transaction.date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          }),
+          createdAt: transaction.createdAt.toISOString()
+        })),
         pagination: {
           total: result.total,
           totalPages: Math.ceil(result.total / parsedFilters.limit),
@@ -33,6 +47,12 @@ export class TransactionService {
         },
         summary: {
           totalAmount: result.totalAmount,
+          totalIncome: result.transactions
+            .filter(t => t.type === 'income')
+            .reduce((sum, t) => sum + t.amount, 0),
+          totalExpense: result.transactions
+            .filter(t => t.type === 'expense')
+            .reduce((sum, t) => sum + t.amount, 0)
         },
       };
     } catch (error) {
