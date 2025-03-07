@@ -21,7 +21,7 @@ const AddButton = ({ navigation }) => {
       <TouchableOpacity
         style={[
           styles.addButton,
-          { backgroundColor: isAddTransactionFocused ? colors.primary.dark : colors.primary.main }
+          { backgroundColor: isAddTransactionFocused ? "red" : colors.primary.main }
         ]}
         onPress={() => {
           if (isAddTransactionFocused) {

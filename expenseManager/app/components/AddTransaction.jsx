@@ -10,8 +10,10 @@ import {
   TouchableWithoutFeedback,
   BackHandler,
   Animated,
+  Platform,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import colors from '../../assets/colors';
 
 const AddTransaction = ({ navigation }) => {
@@ -19,6 +21,8 @@ const AddTransaction = ({ navigation }) => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -28,6 +32,28 @@ const AddTransaction = ({ navigation }) => {
 
     return () => backHandler.remove();
   }, [navigation]);
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const showDatePicker = () => {
+    setDatePickerVisible(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisible(false);
+  };
+
+  const handleConfirm = (date) => {
+    setCurrentDate(date);
+    hideDatePicker();
+  };
 
   const categories = {
     expense: [
@@ -57,6 +83,39 @@ const AddTransaction = ({ navigation }) => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
+        {/* Date Display */}
+        <TouchableOpacity 
+          style={styles.dateContainer}
+          onPress={showDatePicker}
+          activeOpacity={0.7}
+        >
+          <MaterialCommunityIcons
+            name="calendar"
+            size={24}
+            color={colors.text.secondary}
+          />
+          <Text style={styles.dateText}>{formatDate(currentDate)}</Text>
+          {/* <MaterialCommunityIcons
+            name="chevron-down"
+            size={24}
+            color={colors.text.secondary}
+          /> */}
+        </TouchableOpacity>
+
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          onConfirm={handleConfirm}
+          onCancel={hideDatePicker}
+          date={currentDate}
+          buttonTextColorIOS={colors.primary.main}
+          pickerContainerStyleIOS={{ backgroundColor: colors.background.dark }}
+          themeVariant="dark"
+          isDarkModeEnabled
+          accentColor={colors.primary.main}
+          textColor={colors.text.inverse}
+        />
+
         {/* Type Selector */}
         <View style={styles.typeSelector}>
           <TouchableOpacity
@@ -182,6 +241,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.dark,
     padding: 20,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  dateText: {
+    fontSize: 16,
+    color: colors.text.inverse,
+    marginLeft: 10,
+    flex: 1,
   },
   typeSelector: {
     flexDirection: 'row',
