@@ -2,27 +2,9 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import colors from "../../assets/colors";
-
-const categoryIcons = {
-  food_groceries: "food",
-  shopping: "shopping",
-  transport: "car",
-  entertainment: "movie",
-  rent_utilities: "file-document-outline",
-  health_medical: "medical-bag",
-  education: "school-outline",
-  travel: "airplane",
-  others: "dots-horizontal",
-  salary: "cash",
-  savings_investments: "chart-line",
-  miscellaneous: "gift",
-};
+import { getCategoryById, getCategoryIcon } from "../constants/categories";
 
 const TopCategories = ({ categories }) => {
-  const getIconForCategory = (categoryName) => {
-    return categoryIcons[categoryName] || "help-circle-outline";
-  };
-
   const expenseCategories = categories
     .filter((category) => category.type === "expense")
     .sort((a, b) => b.amount - a.amount)
@@ -30,10 +12,10 @@ const TopCategories = ({ categories }) => {
 
   const renderNoCategories = () => (
     <View style={styles.noDataContainer}>
-      <MaterialCommunityIcons 
-        name="chart-bar" 
-        size={50} 
-        color={colors.text.secondary} 
+      <MaterialCommunityIcons
+        name="chart-bar"
+        size={50}
+        color={colors.text.secondary}
       />
       <Text style={styles.noDataText}>No data to show</Text>
       <Text style={styles.noDataSubText}>
@@ -44,26 +26,53 @@ const TopCategories = ({ categories }) => {
 
   return (
     <View style={styles.categoriesContainer}>
-      <Text style={styles.sectionTitle}>Top Categories</Text>
-      
+      <Text style={styles.sectionTitle}>Spent On</Text>
+
       {expenseCategories.length === 0 ? (
         renderNoCategories()
       ) : (
         <View style={styles.categoriesGrid}>
-          {expenseCategories.map((category, index) => (
-            <View key={index} style={styles.categoryCard}>
-              <MaterialCommunityIcons
-                name={getIconForCategory(category.name)}
-                size={32}
-                color={colors.primary.main}
-              />
-              <Text style={styles.categoryName}>{category.name}</Text>
-              <Text style={styles.categoryAmount}>₹{category.amount}</Text>
-              <Text style={styles.categoryPercentage}>
-                {category.percentage.toFixed(1)}%
-              </Text>
-            </View>
-          ))}
+          {expenseCategories.map((category, index) => {
+            const categoryInfo = getCategoryById(
+              category.categoryName,
+              category.type
+            );
+            return (
+              <View key={index} style={styles.categoryCard}>
+                <View style={styles.categoryHeader}>
+                  <View style={styles.iconContainer}>
+                    <MaterialCommunityIcons
+                      name={getCategoryIcon(
+                        category.categoryName,
+                        category.type
+                      )}
+                      size={24}
+                      color={colors.text.inverse}
+                    />
+                  </View>
+                  <Text style={styles.categoryName} numberOfLines={1}>
+                    {categoryInfo.name}
+                  </Text>
+                </View>
+                <View style={styles.categoryDetails}>
+                  <Text style={styles.categoryAmount}>
+                    ₹{category.amount.toLocaleString()}
+                  </Text>
+                  <View style={styles.percentageContainer}>
+                    <Text style={styles.categoryPercentage}>
+                      {category.percentage.toFixed(1)}%
+                    </Text>
+                    <View
+                      style={[
+                        styles.percentageBar,
+                        { width: `${Math.min(100, category.percentage)}%` },
+                      ]}
+                    />
+                  </View>
+                </View>
+              </View>
+            );
+          })}
         </View>
       )}
     </View>
@@ -78,11 +87,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: colors.primary.main,
-    marginBottom: 10,
+    marginBottom: 15,
   },
   noDataContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 30,
     backgroundColor: colors.background.secondary,
     borderRadius: 10,
@@ -91,13 +100,13 @@ const styles = StyleSheet.create({
   noDataText: {
     fontSize: 16,
     color: colors.primary.main,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 10,
   },
   noDataSubText: {
     fontSize: 14,
     color: colors.text.secondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 5,
     paddingHorizontal: 20,
   },
@@ -109,31 +118,53 @@ const styles = StyleSheet.create({
   categoryCard: {
     width: "48%",
     backgroundColor: colors.background.secondary,
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    alignItems: "center",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
+  categoryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  iconContainer: {
+    backgroundColor: colors.primary.main,
+    padding: 8,
+    borderRadius: 8,
+    marginRight: 8,
+  },
   categoryName: {
     color: colors.text,
     fontSize: 14,
-    marginTop: 5,
+    fontWeight: "500",
+    flex: 1,
+  },
+  categoryDetails: {
+    marginTop: 4,
   },
   categoryAmount: {
     color: colors.text,
     fontSize: 16,
     fontWeight: "bold",
-    marginTop: 5,
+    marginBottom: 4,
+  },
+  percentageContainer: {
+    marginTop: 4,
   },
   categoryPercentage: {
     color: colors.text.secondary,
     fontSize: 12,
-    marginTop: 2,
+    marginBottom: 4,
+  },
+  percentageBar: {
+    height: 3,
+    backgroundColor: colors.primary.main,
+    borderRadius: 1.5,
   },
 });
 

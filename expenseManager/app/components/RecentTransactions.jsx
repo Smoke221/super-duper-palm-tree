@@ -3,14 +3,16 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import colors from "../../assets/colors";
+import { getCategoryById } from "../constants/categories";
+import { getPaymentMethodById } from "../constants/paymentMethods";
 
 const RecentTransactions = ({ transactions, onAddPress }) => {
   const renderNoTransactions = () => (
     <View style={styles.noDataContainer}>
-      <MaterialCommunityIcons 
-        name="currency-usd-off" 
-        size={50} 
-        color={colors.text.secondary} 
+      <MaterialCommunityIcons
+        name="currency-usd-off"
+        size={50}
+        color={colors.text.secondary}
       />
       <Text style={styles.noDataText}>No transactions found</Text>
       <Text style={styles.noDataSubText}>
@@ -31,40 +33,61 @@ const RecentTransactions = ({ transactions, onAddPress }) => {
         </TouchableOpacity> */}
       </View>
 
-      {transactions.length === 0 ? (
-        renderNoTransactions()
-      ) : (
-        transactions.map((transaction) => (
-          <View key={transaction.id} style={styles.transaction}>
-            <View style={styles.transactionLeft}>
-              <Text style={styles.transactionDescription}>
-                {transaction.description || "No description"}
-              </Text>
-              <Text style={styles.transactionDate}>
-                {transaction.formattedDate}
-              </Text>
-            </View>
-            <View style={styles.transactionRight}>
-              <Text style={styles.transactionCategory}>
-                {transaction.categoryName}
-              </Text>
-              <Text
-                style={[
-                  styles.transactionAmount,
-                  {
-                    color:
-                      transaction.type === "income"
-                        ? colors.status.success
-                        : colors.status.error,
-                  },
-                ]}
-              >
-                {transaction.type === "income" ? "+" : "-"}₹{transaction.amount}
-              </Text>
-            </View>
-          </View>
-        ))
-      )}
+      {transactions.length === 0
+        ? renderNoTransactions()
+        : transactions.map((transaction) => {
+            // Get the category using the name and type
+            const category = getCategoryById(
+              transaction.categoryName,
+              transaction.type
+            );
+            // Get the payment method
+            const paymentMethod = getPaymentMethodById(
+              transaction.paymentMethod,
+              transaction.type
+            );
+            return (
+              <View key={transaction.id} style={styles.transaction}>
+                <View style={styles.transactionLeft}>
+                  <View style={styles.categoryAndPayment}>
+                    {paymentMethod && (
+                      <MaterialCommunityIcons
+                        name={paymentMethod.icon}
+                        size={16}
+                        color={colors.text.secondary}
+                        style={styles.paymentIcon}
+                      />
+                    )}
+                    <Text style={styles.transactionDescription}>
+                      {category ? category.name : ""}
+                    </Text>
+                  </View>
+                  <Text style={styles.transactionDate}>
+                    {transaction.formattedDate}
+                  </Text>
+                </View>
+                <View style={styles.transactionRight}>
+                  <Text style={styles.transactionCategory}>
+                    {transaction.description || ""}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.transactionAmount,
+                      {
+                        color:
+                          transaction.type === "income"
+                            ? colors.status.success
+                            : colors.status.error,
+                      },
+                    ]}
+                  >
+                    {transaction.type === "income" ? "+" : "-"}₹
+                    {transaction.amount}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
     </View>
   );
 };
@@ -85,8 +108,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   noDataContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 30,
     backgroundColor: colors.background.secondary,
     borderRadius: 10,
@@ -95,13 +118,13 @@ const styles = StyleSheet.create({
   noDataText: {
     fontSize: 16,
     color: colors.primary.main,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 10,
   },
   noDataSubText: {
     fontSize: 14,
     color: colors.text.secondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 5,
     paddingHorizontal: 20,
   },
@@ -119,12 +142,17 @@ const styles = StyleSheet.create({
   transactionLeft: {
     flex: 1,
   },
+  categoryAndPayment: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   transactionRight: {
     alignItems: "flex-end",
   },
   transactionDescription: {
     fontSize: 16,
     color: colors.text.inverse,
+    marginLeft: 5,
   },
   transactionDate: {
     fontSize: 14,

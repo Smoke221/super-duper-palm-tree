@@ -1,18 +1,43 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Notifications from "../components/Header Components/Notifications";
 import Settings from "../components/Header Components/Settings";
-
-const colors = {
-  primary: "#ffffff",
-  secondary: "#888888",
-};
+import UserService from "../helpers/UserName";
+import colors from "../../assets/colors";
 
 const CustomHeader = ({ title }) => {
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const name = await UserService.getUserName();
+        setUserName(name);
+      } catch (error) {
+        console.error("Error fetching username:", error);
+      }
+    };
+
+    fetchUserName();
+  }, []);
+
+  // Function to return greeting based on time of day
+  const getTimeOfDayGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
     <View style={styles.headerContainer}>
       {/* Left Side (Project Name) */}
-      <Text style={styles.title}>{title}</Text>
+      <View>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.greeting}>
+          {getTimeOfDayGreeting()}, {userName}
+        </Text>
+      </View>
 
       {/* Right Side (Notifications & Settings) */}
       <View style={styles.rightContainer}>
@@ -33,7 +58,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   title: {
-    color: colors.primary,
+    color: colors.text.inverse,
     fontSize: 20,
     fontWeight: "bold",
   },
@@ -42,6 +67,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     justifyContent: "space-between",
+  },
+  greeting: {
+    color: colors.primary.main,
+    fontSize: 9,
+    marginTop: 5,
   },
 });
 

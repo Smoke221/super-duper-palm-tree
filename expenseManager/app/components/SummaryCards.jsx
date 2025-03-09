@@ -24,7 +24,7 @@ const SummaryCards = ({ summary }) => {
               ? colors.status.success 
               : colors.status.error
           }]}>
-            ₹{summary.netAmount}
+            ₹  {summary.netAmount}
           </Text>
         </View>
       </View>

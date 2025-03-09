@@ -48,7 +48,7 @@ export default function App() {
         screenOptions={{
           headerShown: false,
         }}
-        initialRouteName={!hasUsername ? "TabNavigator" : "UsernameScreen"}
+        initialRouteName={hasUsername ? "TabNavigator" : "UsernameScreen"}
       >
         <Stack.Screen name="UsernameScreen" component={UsernameScreen} />
         <Stack.Screen name="LoginScreen" component={LoginScreen} />
