@@ -97,7 +97,7 @@ const DailyTransactions = () => {
         <SafeAreaView style={styles.modalContent}>
           <View style={styles.closeHeader}>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Ionicons name="close" size={24} color={colors.text.primary} />
+              <Ionicons name="close" size={32} color={colors.primary.main} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Daily Transactions</Text>
             <View style={{ width: 24 }} />

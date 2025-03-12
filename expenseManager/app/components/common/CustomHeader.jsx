@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Notifications from "../../screens/DailyTransactions";
-import Settings from "./Settings";
+import Settings from "../../screens/Settings";
 import UserService from "../../utils/UserName";
 import colors from "../../../assets/colors";
 

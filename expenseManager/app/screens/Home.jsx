@@ -1,21 +1,33 @@
-import React, { useState } from "react";
-import { View, ActivityIndicator, ScrollView, StyleSheet, SafeAreaView } from "react-native";
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  SafeAreaView,
+} from "react-native";
 import colors from "../../assets/colors";
 import MonthSelector from "../components/common/MonthSelector";
 import SummaryCards from "../components/common/SummaryCards";
 import RecentTransactions from "../components/RecentTransactions";
 import TopCategories from "../components/TopCategories";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from "@react-navigation/native";
 import { useTransactions } from "../utils/useTransactions";
 
 const Home = ({ navigation }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { loading, transactionData, categoryStats, fetchData } = useTransactions(currentDate);
 
+  // Memoize fetchData to avoid unnecessary re-renders
+  const memoizedFetchData = useCallback(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Fetch data only when the screen comes into focus
   useFocusEffect(
-    React.useCallback(() => {
-      fetchData();
-    }, [currentDate, fetchData])
+    useCallback(() => {
+      memoizedFetchData();
+    }, [memoizedFetchData])
   );
 
   if (loading) {
@@ -34,7 +46,7 @@ const Home = ({ navigation }) => {
       </View>
 
       {/* Scrollable Content */}
-      <ScrollView 
+      <ScrollView
         style={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -73,4 +85,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Home;
+export default React.memo(Home); // Memoize the Home component
