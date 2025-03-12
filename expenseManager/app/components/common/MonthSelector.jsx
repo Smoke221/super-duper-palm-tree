@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
-import colors from "../../assets/colors";
+import colors from "../../../assets/colors";
 
 const months = [
   "January", "February", "March", "April", "May", "June",

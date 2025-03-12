@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import Notifications from "../components/Header Components/Notifications";
-import Settings from "../components/Header Components/Settings";
-import UserService from "../helpers/UserName";
-import colors from "../../assets/colors";
+import Notifications from "../../screens/DailyTransactions";
+import Settings from "./Settings";
+import UserService from "../../utils/UserName";
+import colors from "../../../assets/colors";
 
 const CustomHeader = ({ title }) => {
   const [userName, setUserName] = useState("");

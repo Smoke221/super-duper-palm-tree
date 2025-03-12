@@ -8,6 +8,7 @@ import {
   Dimensions,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import colors from "../../../assets/colors";
 
 const Settings = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -33,7 +34,11 @@ const Settings = () => {
           setModalVisible(true);
         }}
       >
-        <Ionicons name="settings-outline" size={24} color="#888" />
+        <Ionicons
+          name="settings-outline"
+          size={24}
+          color={colors.common.white}
+        />
       </TouchableOpacity>
 
       {/* Modal for Settings */}

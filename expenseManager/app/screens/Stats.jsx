@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, View, Button, FlatList } from "react-native";
+import { Text, View, Button, ScrollView } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stats = () => {
@@ -11,7 +11,7 @@ const Stats = () => {
     const fetchData = async () => {
       try {
         // Retrieve userName and transactions from AsyncStorage
-        const storedUserName = await AsyncStorage.getItem('userName');
+        const storedUserName = await AsyncStorage.getItem('username');
         const storedTransactions = await AsyncStorage.getItem('transactions');
 
         if (storedUserName !== null) {
@@ -40,21 +40,6 @@ const Stats = () => {
     }
   };
 
-  // Function to render a single transaction
-  const renderTransaction = (transaction) => {
-    return (
-      <View style={{ marginBottom: 10 }}>
-        <Text>User Name: {transaction.userName}</Text>
-        <Text>Amount: {transaction.amount}</Text>
-        <Text>Type: {transaction.type}</Text>
-        <Text>Date: {transaction.date}</Text>
-        <Text>Category: {transaction.categoryName}</Text>
-        <Text>Payment Method: {transaction.paymentMethod}</Text>
-        <Text>Sync Status: {transaction.isSync ? "Synced" : "Not Synced"}</Text>
-      </View>
-    );
-  };
-
   return (
     <View style={{ padding: 20 }}>
       <Button title="Clear Local Storage" onPress={clearStorage} />
@@ -67,16 +52,36 @@ const Stats = () => {
       )}
 
       <Text>Transactions:</Text>
+      
       {transactions.length > 0 ? (
-        <FlatList
-          data={transactions}
-          renderItem={({ item }) => renderTransaction(item)}
-          keyExtractor={(item, index) => index.toString()}
-        />
+        <ScrollView style={{ marginTop: 10 }}>
+          {/* Table Header */}
+          <View style={{ flexDirection: 'row', borderBottomWidth: 1, paddingBottom: 5 }}>
+            {/* <Text style={{ flex: 1, fontWeight: 'bold' }}>User Name</Text> */}
+            <Text style={{ flex: 1, fontWeight: 'bold' }}>Amount</Text>
+            <Text style={{ flex: 1, fontWeight: 'bold' }}>Type</Text>
+            {/* <Text style={{ flex: 1, fontWeight: 'bold' }}>Date</Text> */}
+            <Text style={{ flex: 1, fontWeight: 'bold' }}>Cat</Text>
+            <Text style={{ flex: 1, fontWeight: 'bold' }}>Payment</Text>
+            <Text style={{ flex: 1, fontWeight: 'bold' }}>Status</Text>
+          </View>
+
+          {/* Table Rows */}
+          {transactions.map((transaction, index) => (
+            <View key={index} style={{ flexDirection: 'row', borderBottomWidth: 1, paddingVertical: 5 }}>
+              {/* <Text style={{ flex: 1 }}>{transaction.userName}</Text> */}
+              <Text style={{ flex: 1 }}>{transaction.amount}</Text>
+              <Text style={{ flex: 1 }}>{transaction.type}</Text>
+              {/* <Text style={{ flex: 1 }}>{transaction.date}</Text> */}
+              <Text style={{ flex: 1 }}>{transaction.categoryName}</Text>
+              <Text style={{ flex: 1 }}>{transaction.paymentMethod}</Text>
+              <Text style={{ flex: 1 }}>{transaction.isSync ? "Synced" : "Not Synced"}</Text>
+            </View>
+          ))}
+        </ScrollView>
       ) : (
         <Text>No transactions found</Text>
       )}
-
     </View>
   );
 };

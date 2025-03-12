@@ -14,14 +14,10 @@ import {
   NumberDictionary,
 } from "unique-names-generator";
 import colors from "../../assets/colors";
-import ApiService from "../services/api.service";
 
 const UsernameScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showSkipDisclaimer, setShowSkipDisclaimer] = useState(false);
 
   const generateUniqueUsername = () => {
     const randomName = uniqueNamesGenerator({
@@ -30,7 +26,6 @@ const UsernameScreen = ({ navigation }) => {
       separator: "-",
     });
 
-    // Capitalize the first letter of each word in randomName
     const capitalizedRandomName = randomName
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -44,124 +39,54 @@ const UsernameScreen = ({ navigation }) => {
     return `${capitalizedRandomName}s${randomNumbers}`;
   };
 
-  const handleSkip = async () => {
+  const handleContinue = async () => {
+    if (username.trim() === "") {
+      setError("Username cannot be empty.");
+      return;
+    }
+
     try {
-      const uniqueUsername = generateUniqueUsername();
-      await AsyncStorage.setItem("username", uniqueUsername);
-      await AsyncStorage.setItem("isSkipped", "true");
+      await AsyncStorage.setItem("username", username.trim());
       navigation.replace("TabNavigator");
     } catch (e) {
-      setError("Failed to save data");
+      setError("Failed to save username");
     }
   };
 
-  const handleAuth = async (action) => {
-    setShowSkipDisclaimer(false);
-    if (username.trim().length < 3) {
-      setError("Username must be at least 3 characters long");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
+  const handleSkip = async () => {
+    const finalUsername = generateUniqueUsername();
     try {
-      const response = await ApiService.authenticateUser({
-        username: username.trim(),
-        password,
-        action,
-        currency: "INR",
-      });
-
-      if (response.success) {
-        await AsyncStorage.setItem("username", username.trim());
-        await AsyncStorage.setItem("isSkipped", "false");
-        navigation.replace("TabNavigator");
-      } else {
-        setError(response.message || "Authentication failed");
-      }
-    } catch (error) {
-      setError(error.message || "Failed to authenticate");
-    } finally {
-      setLoading(false);
+      await AsyncStorage.setItem("username", finalUsername);
+      navigation.replace("TabNavigator");
+    } catch (e) {
+      setError("Failed to save username");
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Expense Manager</Text>
-      <Text style={styles.subtitle}>Please sign in to continue (optional)</Text>
+      <Text style={styles.subtitle}>Enter a username to get started</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Username"
+        placeholder="Enter username (optional)"
         value={username}
         onChangeText={(text) => {
           setUsername(text);
           setError("");
         }}
-        placeholderTextColor="#666"
-        autoCapitalize="none"
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={(text) => {
-          setPassword(text);
-          setError("");
-        }}
-        placeholderTextColor="#666"
-        secureTextEntry
-      />
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      <TouchableOpacity style={styles.button} onPress={handleContinue}>
+        <Text style={styles.buttonText}>Continue</Text>
+      </TouchableOpacity>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.authButton]}
-          onPress={() => handleAuth("signup")}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>Sign Up</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.authButton]}
-          onPress={() => handleAuth("login")}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-      </View>
-
-      {!showSkipDisclaimer ? (
-        <TouchableOpacity
-          style={styles.skipButton}
-          onPress={() => setShowSkipDisclaimer(true)}
-        >
-          <Text style={styles.skipButtonText}>Skip</Text>
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.disclaimerContainer}>
-          <Text style={styles.disclaimer}>
-            Your data won't be synced across devices if you continue without
-            authentication.
-          </Text>
-          <TouchableOpacity
-            style={[styles.button, styles.continueButton]}
-            onPress={handleSkip}
-          >
-            <Text style={styles.buttonText}>Continue</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+        <Text style={styles.skipButtonText}>Skip</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -169,77 +94,55 @@ const UsernameScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.dark,
     padding: 20,
     justifyContent: "center",
+    backgroundColor: colors.background.dark,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: colors.text.inverse,
-    textAlign: "center",
+    color: colors.primary.main,
     marginBottom: 10,
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
     color: colors.text.secondary,
-    textAlign: "center",
     marginBottom: 30,
+    textAlign: "center",
   },
   input: {
-    backgroundColor: colors.background.secondary,
-    padding: 15,
+    backgroundColor: "white",
     borderRadius: 8,
-    fontSize: 16,
-    color: colors.text.primary,
+    padding: 15,
     marginBottom: 15,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
+    color: colors.text.primary,
   },
   button: {
+    backgroundColor: colors.primary.main,
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
   },
-  authButton: {
-    backgroundColor: colors.primary.main,
-    flex: 0.48,
-  },
-  continueButton: {
-    backgroundColor: "#a38b43",
-    width: "100%",
-    marginTop: 15,
-  },
   buttonText: {
-    color: colors.text.inverse,
+    color: colors.common.white,
     fontSize: 16,
     fontWeight: "bold",
   },
+  errorText: {
+    color: colors.status.error,
+    marginBottom: 15,
+  },
   skipButton: {
-    marginTop: 30,
     padding: 15,
+    borderRadius: 8,
     alignItems: "center",
+    marginTop: 15,
   },
   skipButtonText: {
-    color: colors.text.secondary,
+    color: colors.primary.main,
     fontSize: 16,
-  },
-  disclaimerContainer: {
-    marginTop: 30,
-    alignItems: "center",
-  },
-  disclaimer: {
-    color: "#a38b43",
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 5,
-  },
-  error: {
-    color: colors.status.error,
-    marginBottom: 10,
+    fontWeight: "bold",
   },
 });
 

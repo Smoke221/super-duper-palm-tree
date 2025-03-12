@@ -2,10 +2,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigationState } from '@react-navigation/native';
-import Home from "./components/Home";
-import Stats from "./components/Stats";
+import Home from "./screens/Home";
+import Stats from "./screens/Stats";
 import AddTransaction from "./components/AddTransaction";
-import CustomHeader from "./default/CustomHeader";
+import CustomHeader from "./components/common/CustomHeader";
 import colors from "../assets/colors";
 import Ionicons from "react-native-vector-icons/Ionicons";
 

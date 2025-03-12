@@ -16,7 +16,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import colors from "../../assets/colors";
-import UserService from "../helpers/UserName";
+import UserService from "../utils/UserName";
 import { categories } from "../constants/categories";
 import { paymentMethods } from "../constants/paymentMethods";
 
@@ -71,25 +71,19 @@ const AddTransaction = ({ navigation }) => {
   const handleSave = async () => {
     if (!amount || !selectedCategory) return;
 
-    const userName = await UserService.getUserName();
-
     const transaction = {
       id: Date.now().toString(),
-      userName,
       amount: parseFloat(amount),
       type,
       date: currentDate.toISOString(),
       categoryName: selectedCategory.id,
       description: description || undefined,
       paymentMethod: paymentMethod,
-      isSync: false,
     };
 
     try {
       // Get existing transactions from AsyncStorage
-      const existingTransactionsStr = await AsyncStorage.getItem(
-        "transactions"
-      );
+      const existingTransactionsStr = await AsyncStorage.getItem("transactions");
       const existingTransactions = existingTransactionsStr
         ? JSON.parse(existingTransactionsStr)
         : [];
@@ -102,10 +96,6 @@ const AddTransaction = ({ navigation }) => {
         "transactions",
         JSON.stringify(updatedTransactions)
       );
-
-      // Log the transaction data
-      console.log("New Transaction:", transaction);
-      console.log("Updated Transactions:", updatedTransactions);
 
       navigation.navigate("Home");
       setAmount("");

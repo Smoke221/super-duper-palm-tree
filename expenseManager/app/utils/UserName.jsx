@@ -15,9 +15,9 @@ class UserService {
         this.userName = storedUserName;
         return storedUserName;
       }
-      throw new Error("User not authenticated");
+      return "Guest"; // Default fallback
     } catch (error) {
-      throw new Error("Failed to retrieve userName from AsyncStorage");
+      return "Guest"; // Default fallback on error
     }
   }
 }

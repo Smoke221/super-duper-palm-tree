@@ -2,7 +2,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 import React, { useState, useEffect } from "react";
 import { StatusBar, View, ActivityIndicator } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import LoginScreen from "./LoginScreen";
 import TabNavigator from "./TabNavigator";
 import UsernameScreen from "./components/UsernameScreen";
 import colors from '../assets/colors';
@@ -51,7 +50,6 @@ export default function App() {
         initialRouteName={hasUsername ? "TabNavigator" : "UsernameScreen"}
       >
         <Stack.Screen name="UsernameScreen" component={UsernameScreen} />
-        <Stack.Screen name="LoginScreen" component={LoginScreen} />
         <Stack.Screen name="TabNavigator" component={TabNavigator} />
       </Stack.Navigator>
     </>

@@ -1,12 +1,14 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import { View, Text, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import colors from "../../assets/colors";
 import { getCategoryById } from "../constants/categories";
 import { getPaymentMethodById } from "../constants/paymentMethods";
+import { formatDate } from "../utils/transactionUtils";
 
 const RecentTransactions = ({ transactions, onAddPress }) => {
+  const recentTransactions = transactions.slice(0, 5);
+
   const renderNoTransactions = () => (
     <View style={styles.noDataContainer}>
       <MaterialCommunityIcons
@@ -24,70 +26,58 @@ const RecentTransactions = ({ transactions, onAddPress }) => {
   return (
     <View style={styles.transactionsContainer}>
       <View style={styles.transactionHeader}>
-        <Text style={styles.sectionTitle}>Recent Transactions</Text>
-        {/* <TouchableOpacity 
-          style={styles.addButton}
-          onPress={onAddPress}
-        >
-          <Ionicons name="add-circle" size={32} color={colors.primary.main} />
-        </TouchableOpacity> */}
+        <Text style={styles.sectionTitle}>Recent</Text>
       </View>
 
-      {transactions.length === 0
+      {recentTransactions.length === 0
         ? renderNoTransactions()
-        : transactions.map((transaction) => {
-            // Get the category using the name and type
-            const category = getCategoryById(
-              transaction.categoryName,
-              transaction.type
-            );
-            // Get the payment method
-            const paymentMethod = getPaymentMethodById(
-              transaction.paymentMethod,
-              transaction.type
-            );
-            return (
-              <View key={transaction.id} style={styles.transaction}>
-                <View style={styles.transactionLeft}>
-                  <View style={styles.categoryAndPayment}>
-                    {paymentMethod && (
-                      <MaterialCommunityIcons
-                        name={paymentMethod.icon}
-                        size={16}
-                        color={colors.text.secondary}
-                        style={styles.paymentIcon}
-                      />
-                    )}
-                    <Text style={styles.transactionDescription}>
-                      {category ? category.name : ""}
-                    </Text>
-                  </View>
-                  <Text style={styles.transactionDate}>
-                    {transaction.formattedDate}
-                  </Text>
-                </View>
-                <View style={styles.transactionRight}>
-                  <Text style={styles.transactionCategory}>
-                    {transaction.description || ""}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.transactionAmount,
-                      {
-                        color:
-                          transaction.type === "income"
-                            ? colors.status.success
-                            : colors.status.error,
-                      },
-                    ]}
-                  >
-                    {transaction.type === "income" ? "+" : "-"}₹
-                    {transaction.amount}
-                  </Text>
-                </View>
-              </View>
-            );
-          })}
+        : recentTransactions.map((transaction) => (
+            <TransactionItem key={transaction.id} item={transaction} />
+          ))}
+    </View>
+  );
+};
+
+const TransactionItem = ({ item }) => {
+  const category = getCategoryById(item.categoryName, item.type);
+  const paymentMethod = getPaymentMethodById(item.paymentMethod, item.type);
+
+  return (
+    <View style={styles.transaction}>
+      <View style={styles.transactionLeft}>
+        <View style={styles.categoryAndPayment}>
+          {paymentMethod && (
+            <MaterialCommunityIcons
+              name={paymentMethod.icon}
+              size={16}
+              color={colors.primary.main}
+              style={styles.paymentIcon}
+            />
+          )}
+          <Text style={styles.transactionDescription}>
+            {category?.name || ""}
+          </Text>
+        </View>
+        <Text style={styles.transactionDate}>
+          {formatDate(new Date(item.date))}
+        </Text>
+      </View>
+      <View style={styles.transactionRight}>
+        <Text style={styles.transactionCategory}>{item.description || ""}</Text>
+        <Text
+          style={[
+            styles.transactionAmount,
+            {
+              color:
+                item.type === "income"
+                  ? colors.status.success
+                  : colors.status.error,
+            },
+          ]}
+        >
+          {item.type === "income" ? "+" : "-"}₹{item.amount}
+        </Text>
+      </View>
     </View>
   );
 };
