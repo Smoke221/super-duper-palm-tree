@@ -16,9 +16,10 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import colors from "../../assets/colors";
-import UserService from "../utils/UserName";
+import UserService from "../utils/LocalStorageVariables";
 import { categories } from "../constants/categories";
 import { paymentMethods } from "../constants/paymentMethods";
+import LocalStorageService from "../utils/LocalStorageVariables";
 
 const AddTransaction = ({ navigation }) => {
   const [type, setType] = useState("expense");
@@ -28,11 +29,22 @@ const AddTransaction = ({ navigation }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [currencySymbol, setCurrencySymbol] = useState("");
 
   useEffect(() => {
     // Reset payment method when transaction type changes
     setPaymentMethod(type === "expense" ? "cash" : "bank_transfer");
   }, [type]);
+
+  useEffect(() => {
+    const fetchCurrenySymbol = async () => {
+      const currencySymbol = await LocalStorageService.getCurrencySymbol();
+      if (currencySymbol) {
+        setCurrencySymbol(currencySymbol);
+      }
+    };
+    fetchCurrenySymbol();
+  }, []);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -83,7 +95,9 @@ const AddTransaction = ({ navigation }) => {
 
     try {
       // Get existing transactions from AsyncStorage
-      const existingTransactionsStr = await AsyncStorage.getItem("transactions");
+      const existingTransactionsStr = await AsyncStorage.getItem(
+        "transactions"
+      );
       const existingTransactions = existingTransactionsStr
         ? JSON.parse(existingTransactionsStr)
         : [];
@@ -194,7 +208,7 @@ const AddTransaction = ({ navigation }) => {
 
         {/* Amount Input */}
         <View style={styles.amountContainer}>
-          <Text style={styles.currencySymbol}>₹</Text>
+          <Text style={styles.currencySymbol}>{currencySymbol}</Text>
           <TextInput
             style={styles.amountInput}
             placeholder="0.00"

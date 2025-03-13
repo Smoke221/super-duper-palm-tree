@@ -1,10 +1,22 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import colors from "../../assets/colors";
 import { getCategoryById, getCategoryIcon } from "../constants/categories";
+import LocalStorageService from "../utils/LocalStorageVariables";
 
 const TopCategories = ({ categories }) => {
+  const [currencySymbol, setCurrencySymbol] = useState("");
+
+  useEffect(() => {
+    const fetchCurrenySymbol = async () => {
+      const currencySymbol = await LocalStorageService.getCurrencySymbol();
+      if (currencySymbol) {
+        setCurrencySymbol(currencySymbol);
+      }
+    };
+    fetchCurrenySymbol();
+  }, []);
   const expenseCategories = categories
     .filter((category) => category.type === "expense")
     .sort((a, b) => b.amount - a.amount)
@@ -56,7 +68,8 @@ const TopCategories = ({ categories }) => {
                 </View>
                 <View style={styles.categoryDetails}>
                   <Text style={styles.categoryAmount}>
-                    ₹{category.amount.toLocaleString()}
+                    {currencySymbol}
+                    {category.amount.toLocaleString()}
                   </Text>
                   <View style={styles.percentageContainer}>
                     <Text style={styles.categoryPercentage}>

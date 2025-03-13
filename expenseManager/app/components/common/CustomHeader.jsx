@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Notifications from "../../screens/DailyTransactions";
 import Settings from "../../screens/Settings";
-import UserService from "../../utils/UserName";
 import colors from "../../../assets/colors";
+import LocalStorageService from "../../utils/LocalStorageVariables";
 
 const CustomHeader = ({ title }) => {
   const [userName, setUserName] = useState("");
@@ -11,7 +11,7 @@ const CustomHeader = ({ title }) => {
   useEffect(() => {
     const fetchUserName = async () => {
       try {
-        const name = await UserService.getUserName();
+        const name = await LocalStorageService.getUserName();
         setUserName(name);
       } catch (error) {
         console.error("Error fetching username:", error);

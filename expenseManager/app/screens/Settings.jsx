@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -10,6 +9,7 @@ import {
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import colors from "../../assets/colors";
+import LocalStorageService from "../utils/LocalStorageVariables";
 
 const Settings = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -19,7 +19,7 @@ const Settings = () => {
   // Fetch username from AsyncStorage
   useEffect(() => {
     const fetchUsername = async () => {
-      const storedUsername = await AsyncStorage.getItem("username");
+      const storedUsername = await LocalStorageService.getUserName();
       if (storedUsername) {
         setUsername(storedUsername);
       }

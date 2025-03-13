@@ -1,13 +1,25 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import colors from "../../assets/colors";
 import { getCategoryById } from "../constants/categories";
 import { getPaymentMethodById } from "../constants/paymentMethods";
+import LocalStorageService from "../utils/LocalStorageVariables";
 import { formatDate } from "../utils/transactionUtils";
 
 const RecentTransactions = ({ transactions, onAddPress }) => {
   const recentTransactions = transactions.slice(0, 5);
+  const [currencySymbol, setCurrencySymbol] = useState("");
+
+  useEffect(() => {
+    const fetchCurrenySymbol = async () => {
+      const currencySymbol = await LocalStorageService.getCurrencySymbol();
+      if (currencySymbol) {
+        setCurrencySymbol(currencySymbol);
+      }
+    };
+    fetchCurrenySymbol();
+  }, []);
 
   const renderNoTransactions = () => (
     <View style={styles.noDataContainer}>
@@ -32,13 +44,17 @@ const RecentTransactions = ({ transactions, onAddPress }) => {
       {recentTransactions.length === 0
         ? renderNoTransactions()
         : recentTransactions.map((transaction) => (
-            <TransactionItem key={transaction.id} item={transaction} />
+            <TransactionItem
+              key={transaction.id}
+              item={transaction}
+              currencySymbol={currencySymbol}
+            />
           ))}
     </View>
   );
 };
 
-const TransactionItem = ({ item }) => {
+const TransactionItem = ({ item, currencySymbol }) => {
   const category = getCategoryById(item.categoryName, item.type);
   const paymentMethod = getPaymentMethodById(item.paymentMethod, item.type);
 
@@ -75,7 +91,10 @@ const TransactionItem = ({ item }) => {
             },
           ]}
         >
-          {item.type === "income" ? "+" : "-"}₹{item.amount}
+          {item.type === "income" ? "+" : "-"}
+          {" "}
+          {currencySymbol}
+          {item.amount}
         </Text>
       </View>
     </View>

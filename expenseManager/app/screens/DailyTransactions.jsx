@@ -1,18 +1,18 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  SafeAreaView,
   ActivityIndicator,
   FlatList,
+  Modal,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
 import colors from "../../assets/colors";
 import {
   getCategoryById,
@@ -20,9 +20,10 @@ import {
   getCategoryIcon,
 } from "../constants/categories";
 import { getPaymentMethodById } from "../constants/paymentMethods";
+import LocalStorageService from "../utils/LocalStorageVariables";
 import {
-  filterTransactionsByDate,
   calculateTotals,
+  filterTransactionsByDate,
   formatDate,
   formatTime,
 } from "../utils/transactionUtils";
@@ -34,6 +35,17 @@ const DailyTransactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [totals, setTotals] = useState({ totalIncome: 0, totalExpense: 0 });
   const [loading, setLoading] = useState(true);
+  const [currencySymbol, setCurrencySymbol] = useState("");
+
+  useEffect(() => {
+    const fetchCurrenySymbol = async () => {
+      const currencySymbol = await LocalStorageService.getCurrencySymbol();
+      if (currencySymbol) {
+        setCurrencySymbol(currencySymbol);
+      }
+    };
+    fetchCurrenySymbol();
+  }, []);
 
   useEffect(() => {
     fetchTransactionsForDate(currentDate);
@@ -128,13 +140,13 @@ const DailyTransactions = () => {
             <View style={[styles.summaryCard, styles.incomeCard]}>
               <Text style={styles.summaryLabel}>Income</Text>
               <Text style={styles.incomeText}>
-                ${totals.totalIncome.toFixed(2)}
+                {currencySymbol}{totals.totalIncome.toFixed(2)}
               </Text>
             </View>
             <View style={[styles.summaryCard, styles.expenseCard]}>
               <Text style={styles.summaryLabel}>Expense</Text>
               <Text style={styles.expenseText}>
-                ${totals.totalExpense.toFixed(2)}
+                {currencySymbol}{totals.totalExpense.toFixed(2)}
               </Text>
             </View>
           </View>
@@ -163,7 +175,12 @@ const DailyTransactions = () => {
                 <FlatList
                   data={transactions}
                   keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item }) => <TransactionItem item={item} />}
+                  renderItem={({ item }) => (
+                    <TransactionItem
+                      item={item}
+                      currencySymbol={currencySymbol}
+                    />
+                  )}
                   contentContainerStyle={styles.transactionsList}
                 />
               )}
@@ -186,7 +203,7 @@ const DailyTransactions = () => {
   );
 };
 
-const TransactionItem = ({ item }) => {
+const TransactionItem = ({ item, currencySymbol }) => {
   const category = getCategoryById(item.categoryName, item.type);
   const paymentMethod = getPaymentMethodById(item.paymentMethod, item.type);
   const transactionDate = new Date(item.date);
@@ -243,7 +260,10 @@ const TransactionItem = ({ item }) => {
             item.type === "income" ? styles.income : styles.expense,
           ]}
         >
-          {item.type === "income" ? "+" : "-"}₹{item.amount.toFixed(2)}
+          {item.type === "income" ? "+" : "-"}
+          {" "}
+          {currencySymbol}
+          {item.amount.toFixed(2)}
         </Text>
       </View>
     </View>
