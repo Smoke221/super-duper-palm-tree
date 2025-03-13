@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Linking,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import colors from "../../assets/colors";
@@ -62,6 +63,23 @@ const Settings = () => {
               <Text style={styles.syncButtonText}>Sync</Text>
               <Text style={styles.comingSoonText}>Coming Soon</Text>
             </TouchableOpacity>
+            <Text style={styles.madeBy}>
+              Made with ❤️ by{" "}
+              <TouchableOpacity
+                onPress={() => Linking.openURL("https://smoke221.github.io/")}
+              >
+                <Text
+                  style={{
+                    color: colors.primary.main,
+                    top: 3.5,
+                    fontWeight: 500,
+                    fontSize: 10,
+                  }}
+                >
+                  anil
+                </Text>
+              </TouchableOpacity>
+            </Text>
           </View>
         </View>
       </Modal>
@@ -170,6 +188,11 @@ const styles = StyleSheet.create({
     color: colors.common.white,
     fontSize: 16,
     fontWeight: "bold",
+  },
+  madeBy: {
+    fontSize: 8,
+    marginTop: 10,
+    textAlign: "center",
   },
 });
 

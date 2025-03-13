@@ -94,7 +94,7 @@ const DailyTransactions = () => {
         style={styles.iconButton}
       >
         <MaterialCommunityIcons
-          name="file-document-outline"
+          name="calendar-today"
           size={24}
           color={colors.common.white}
         />
