@@ -64,7 +64,6 @@ const Settings = () => {
               <Text style={styles.comingSoonText}>Coming Soon</Text>
             </TouchableOpacity>
             <Text style={styles.madeBy}>
-              Made with ❤️ by{" "}
               <TouchableOpacity
                 onPress={() => Linking.openURL("https://smoke221.github.io/")}
               >
@@ -76,7 +75,7 @@ const Settings = () => {
                     fontSize: 10,
                   }}
                 >
-                  anil
+                  About us
                 </Text>
               </TouchableOpacity>
             </Text>
@@ -149,13 +148,14 @@ const styles = StyleSheet.create({
   },
   syncButtonText: {
     color: colors.common.white,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
   },
   comingSoonText: {
     color: colors.text.secondary,
-    fontSize: 12,
-    marginTop: 5,
+    fontSize: 10,
+    // marginTop: 5,
+    fontStyle: "italic",
   },
   privacyModalOverlay: {
     flex: 1,
