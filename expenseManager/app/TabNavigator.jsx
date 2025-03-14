@@ -4,10 +4,12 @@ import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigationState } from '@react-navigation/native';
 import Home from "./screens/Home";
 import Stats from "./screens/Stats";
+import RecurringTransactions from "./screens/RecurringTransactions";
 import AddTransaction from "./components/AddTransaction";
 import CustomHeader from "./components/common/CustomHeader";
 import colors from "../assets/colors";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const Tab = createBottomTabNavigator();
 
@@ -67,6 +69,19 @@ const TabNavigator = () => {
           ),
         }}
       />
+      
+      <Tab.Screen
+        name="Recurring"
+        component={RecurringTransactions}
+        options={{
+          headerShown: true,
+          header: () => <CustomHeader title="Expense Manager" />,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="calendar-refresh" size={size} color={color} />
+          ),
+        }}
+      />
+      
       <Tab.Screen
         name="AddTransaction"
         component={AddTransaction}
@@ -82,6 +97,7 @@ const TabNavigator = () => {
           tabBarIcon: () => <AddButton navigation={navigation} />,
         })}
       />
+      
       <Tab.Screen
         name="Stats"
         component={Stats}

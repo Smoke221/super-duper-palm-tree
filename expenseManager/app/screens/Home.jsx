@@ -13,6 +13,7 @@ import RecentTransactions from "../components/RecentTransactions";
 import TopCategories from "../components/TopCategories";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTransactions } from "../utils/useTransactions";
+import BudgetManager from '../components/BudgetManager';
 
 const Home = ({ navigation }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -38,6 +39,9 @@ const Home = ({ navigation }) => {
     );
   }
 
+  // Get monthly expense total from category stats
+  const monthlyExpense = categoryStats.summary ? categoryStats.summary.totalExpense : 0;
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Fixed Month Selector */}
@@ -50,6 +54,12 @@ const Home = ({ navigation }) => {
         style={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Pass currentDate and monthly expense to BudgetManager */}
+        <BudgetManager 
+          currentDate={currentDate} 
+          monthlyExpense={monthlyExpense} 
+        />
+        
         <SummaryCards summary={categoryStats.summary} />
         <TopCategories categories={categoryStats.categoryBreakdown} />
         <RecentTransactions

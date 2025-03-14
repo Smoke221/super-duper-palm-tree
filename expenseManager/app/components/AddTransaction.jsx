@@ -9,8 +9,8 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   BackHandler,
-  Animated,
-  Platform,
+  Switch,
+  Alert,
 } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -21,15 +21,27 @@ import { categories } from "../constants/categories";
 import { paymentMethods } from "../constants/paymentMethods";
 import LocalStorageService from "../utils/LocalStorageVariables";
 
-const AddTransaction = ({ navigation }) => {
+const AddTransaction = ({ route, navigation }) => {
+  // Handle serializable date parameters
+  const initialDate = route.params?.dateTimestamp 
+    ? new Date(route.params.dateTimestamp) 
+    : new Date();
+  
   const [type, setType] = useState("expense");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(initialDate);
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [currencySymbol, setCurrencySymbol] = useState("");
+  
+  // Recurring transaction features
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [frequency, setFrequency] = useState("monthly");
+  
+  // Callback for when a transaction is added
+  const onTransactionAdded = route.params?.onTransactionAdded;
 
   useEffect(() => {
     // Reset payment method when transaction type changes
@@ -80,48 +92,158 @@ const AddTransaction = ({ navigation }) => {
     hideDatePicker();
   };
 
-  const handleSave = async () => {
-    if (!amount || !selectedCategory) return;
+  // Handle different frequency options
+  const getFrequencyOptions = () => {
+    return (
+      <View style={styles.frequencyOptions}>
+        <TouchableOpacity
+          style={[
+            styles.frequencyOption,
+            frequency === "daily" && styles.selectedFrequency,
+          ]}
+          onPress={() => setFrequency("daily")}
+        >
+          <Text
+            style={[
+              styles.frequencyText,
+              frequency === "daily" && styles.selectedFrequencyText,
+            ]}
+          >
+            Daily
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.frequencyOption,
+            frequency === "weekly" && styles.selectedFrequency,
+          ]}
+          onPress={() => setFrequency("weekly")}
+        >
+          <Text
+            style={[
+              styles.frequencyText,
+              frequency === "weekly" && styles.selectedFrequencyText,
+            ]}
+          >
+            Weekly
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.frequencyOption,
+            frequency === "monthly" && styles.selectedFrequency,
+          ]}
+          onPress={() => setFrequency("monthly")}
+        >
+          <Text
+            style={[
+              styles.frequencyText,
+              frequency === "monthly" && styles.selectedFrequencyText,
+            ]}
+          >
+            Monthly
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.frequencyOption,
+            frequency === "yearly" && styles.selectedFrequency,
+          ]}
+          onPress={() => setFrequency("yearly")}
+        >
+          <Text
+            style={[
+              styles.frequencyText,
+              frequency === "yearly" && styles.selectedFrequencyText,
+            ]}
+          >
+            Yearly
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
-    const transaction = {
-      id: Date.now().toString(),
-      amount: parseFloat(amount),
-      type,
-      date: currentDate.toISOString(),
-      categoryName: selectedCategory.id,
-      description: description || undefined,
-      paymentMethod: paymentMethod,
-    };
+  const handleSave = async () => {
+    if (!amount || !selectedCategory) {
+      Alert.alert("Missing information", "Please enter amount and select a category");
+      return;
+    }
 
     try {
-      // Get existing transactions from AsyncStorage
-      const existingTransactionsStr = await AsyncStorage.getItem(
-        "transactions"
-      );
-      const existingTransactions = existingTransactionsStr
-        ? JSON.parse(existingTransactionsStr)
-        : [];
+      if (isRecurring) {
+        // Create a recurring transaction
+        const recurringTransaction = {
+          description: description || selectedCategory.name,
+          amount: parseFloat(amount),
+          type,
+          categoryName: selectedCategory.id,
+          paymentMethod: paymentMethod,
+          frequency: frequency,
+          startDate: currentDate,
+          endDate: null,
+          active: true,
+        };
+        
+        await LocalStorageService.addRecurringTransaction(recurringTransaction);
+        
+        Alert.alert(
+          "Recurring Transaction Added",
+          `Your ${frequency} ${type} has been set up!`,
+          [{ text: "Great!" }]
+        );
+      } else {
+        // Create a regular transaction
+        const transaction = {
+          id: Date.now().toString(),
+          amount: parseFloat(amount),
+          type,
+          date: currentDate.toISOString(),
+          categoryName: selectedCategory.id,
+          description: description || undefined,
+          paymentMethod: paymentMethod,
+        };
 
-      // Add new transaction to the array
-      const updatedTransactions = [...existingTransactions, transaction];
+        // Get existing transactions from AsyncStorage
+        const existingTransactionsStr = await AsyncStorage.getItem("transactions");
+        const existingTransactions = existingTransactionsStr
+          ? JSON.parse(existingTransactionsStr)
+          : [];
 
-      // Save back to AsyncStorage
-      await AsyncStorage.setItem(
-        "transactions",
-        JSON.stringify(updatedTransactions)
-      );
+        // Add new transaction to the array
+        const updatedTransactions = [...existingTransactions, transaction];
 
+        // Save back to AsyncStorage
+        await AsyncStorage.setItem(
+          "transactions",
+          JSON.stringify(updatedTransactions)
+        );
+      }
+      
+      // Call the callback if provided
+      if (onTransactionAdded) {
+        onTransactionAdded();
+      }
+
+      // Navigate back and reset form
       navigation.navigate("Home");
       setAmount("");
       setDescription("");
       setType("expense");
       setSelectedCategory(null);
       setCurrentDate(new Date());
-      transaction.type === "expense"
+      setIsRecurring(false);
+      setFrequency("monthly");
+      type === "expense"
         ? setPaymentMethod("cash")
         : setPaymentMethod("bank_transfer");
+        
     } catch (error) {
       console.error("Error saving transaction:", error);
+      Alert.alert("Error", "Failed to save the transaction");
     }
   };
 
@@ -229,6 +351,31 @@ const AddTransaction = ({ navigation }) => {
             onChangeText={setDescription}
           />
         </View>
+        
+        {/* Recurring Transaction Toggle */}
+        <View style={styles.recurringContainer}>
+          <View style={styles.recurringToggle}>
+            <Text style={styles.recurringLabel}>Make this recurring?</Text>
+            <Switch
+              value={isRecurring}
+              onValueChange={setIsRecurring}
+              trackColor={{ false: colors.text.disabled, true: colors.primary.main }}
+              thumbColor={colors.common.white}
+            />
+          </View>
+          
+          {isRecurring && (
+            <View style={styles.recurringSettings}>
+              <Text style={styles.recurringFrequencyLabel}>How often?</Text>
+              {getFrequencyOptions()}
+              <Text style={styles.recurringNote}>
+                {type === "expense" 
+                  ? "Setting up automatic reminders for your bills. Adulting level: Pro! 🏆" 
+                  : "Recurring income? Hope it's your salary and not allowance from mom! 💸"}
+              </Text>
+            </View>
+          )}
+        </View>
 
         {/* Payment Method */}
         <Text style={styles.sectionTitle}>Payment Method</Text>
@@ -316,7 +463,9 @@ const AddTransaction = ({ navigation }) => {
           onPress={handleSave}
           disabled={!amount || !selectedCategory}
         >
-          <Text style={styles.saveButtonText}>Save Transaction</Text>
+          <Text style={styles.saveButtonText}>
+            {isRecurring ? "Save Recurring Transaction" : "Save Transaction"}
+          </Text>
         </TouchableOpacity>
       </View>
     </TouchableWithoutFeedback>
@@ -384,7 +533,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   inputContainer: {
-    marginBottom: 30,
+    marginBottom: 20,
   },
   descriptionInput: {
     fontSize: 18,
@@ -392,6 +541,58 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border.dark,
     paddingVertical: 10,
+  },
+  recurringContainer: {
+    marginBottom: 20,
+    backgroundColor: colors.background.secondary,
+    borderRadius: 10,
+    padding: 15,
+  },
+  recurringToggle: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  recurringLabel: {
+    fontSize: 16,
+    color: colors.text.inverse,
+  },
+  recurringSettings: {
+    marginTop: 15,
+  },
+  recurringFrequencyLabel: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginBottom: 10,
+  },
+  frequencyOptions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  frequencyOption: {
+    flex: 1,
+    alignItems: "center",
+    padding: 8,
+    borderRadius: 5,
+    marginHorizontal: 2,
+    backgroundColor: colors.background.dark,
+  },
+  selectedFrequency: {
+    backgroundColor: colors.primary.main,
+  },
+  frequencyText: {
+    fontSize: 12,
+    color: colors.text.secondary,
+  },
+  selectedFrequencyText: {
+    color: colors.text.inverse,
+  },
+  recurringNote: {
+    fontSize: 12,
+    fontStyle: "italic",
+    color: colors.text.secondary,
+    marginTop: 10,
+    textAlign: "center",
   },
   paymentMethodContainer: {
     flexDirection: "row",
